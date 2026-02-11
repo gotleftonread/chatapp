@@ -1,9 +1,33 @@
 body {
     margin: 0;
-    display: flex;
     background: #1e1e1e;
     color: white;
     font-family: Arial;
+    height: 100vh;
+    display: flex;
+}
+
+/* LOGIN SCREEN */
+#loginScreen {
+    margin: auto;
+    text-align: center;
+}
+
+#usernameInput {
+    padding: 10px;
+    width: 200px;
+    margin-bottom: 10px;
+}
+
+#joinBtn {
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+/* MAIN APP */
+#app {
+    display: flex;
+    width: 100%;
 }
 
 #sidebar {
@@ -21,18 +45,13 @@ body {
     background: #3a3a3a;
 }
 
-/* Shared panel layout */
 .panel {
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-/* Global chat panel */
-#chatContainer {
-    background: #1e1e1e;
-}
-
+/* GLOBAL CHAT */
 #messages {
     flex: 1;
     padding: 10px;
@@ -50,11 +69,9 @@ body {
     font-style: italic;
 }
 
-/* FULL-SCREEN DM PANEL */
+/* DM PANEL */
 #dmPanel {
-    display: none;
     background: #333;
-    flex-direction: column;
 }
 
 #dmHeader {
