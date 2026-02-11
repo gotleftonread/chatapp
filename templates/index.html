@@ -37,8 +37,13 @@
 
 <script>
 const socket = io();
+
 let myUsername = null;
 let currentDM = null;
+
+// message history
+let dmHistory = {};      // { username: [ {from, message}, ... ] }
+let globalHistory = [];  // [ {sender, text} ]
 
 // LOGIN
 document.getElementById("joinBtn").onclick = () => {
@@ -65,19 +70,27 @@ document.getElementById("messageInput").addEventListener("keydown", e => {
 
 // GLOBAL CHAT RECEIVE
 socket.on("message", data => {
-    const box = document.getElementById("messages");
-    const div = document.createElement("div");
-    div.textContent = data.sender + ": " + data.text;
-    box.appendChild(div);
+    globalHistory.push(data);
+
+    if (!currentDM) {
+        const box = document.getElementById("messages");
+        const div = document.createElement("div");
+        div.textContent = data.sender + ": " + data.text;
+        box.appendChild(div);
+    }
 });
 
 // SYSTEM MESSAGES
 socket.on("system_message", msg => {
-    const box = document.getElementById("messages");
-    const div = document.createElement("div");
-    div.classList.add("system");
-    div.textContent = msg;
-    box.appendChild(div);
+    globalHistory.push({ sender: "System", text: msg });
+
+    if (!currentDM) {
+        const box = document.getElementById("messages");
+        const div = document.createElement("div");
+        div.classList.add("system");
+        div.textContent = msg;
+        box.appendChild(div);
+    }
 });
 
 // USER LIST
@@ -114,6 +127,15 @@ function openDM(user) {
     document.getElementById("dmPanel").style.display = "flex";
 
     document.getElementById("dmHeader").textContent = "DM with " + user;
+
+    const box = document.getElementById("dmMessages");
+    box.innerHTML = "";
+
+    if (dmHistory[user]) {
+        dmHistory[user].forEach(m => {
+            addDMMessage(m.from, m.message);
+        });
+    }
 }
 
 // SEND DM
@@ -124,21 +146,27 @@ document.getElementById("dmInput").addEventListener("keydown", e => {
             to: currentDM,
             message: e.target.value
         });
+
+        if (!dmHistory[currentDM]) dmHistory[currentDM] = [];
+        dmHistory[currentDM].push({ from: myUsername, message: e.target.value });
+
         addDMMessage(myUsername, e.target.value);
         e.target.value = "";
     }
 });
 
-// RECEIVE DM (with unread indicator)
+// RECEIVE DM
 socket.on("dm", data => {
     const sender = data.from;
+
+    if (!dmHistory[sender]) dmHistory[sender] = [];
+    dmHistory[sender].push({ from: sender, message: data.message });
 
     if (currentDM === sender) {
         addDMMessage(sender, data.message);
     } else {
         const userEl = [...document.querySelectorAll(".user")]
             .find(u => u.dataset.username === sender);
-
         if (userEl) userEl.classList.add("unread");
     }
 });
@@ -154,11 +182,20 @@ function addDMMessage(sender, msg) {
 // BACK TO GLOBAL CHAT
 document.getElementById("globalChatBtn").onclick = () => {
     currentDM = null;
+
     document.getElementById("dmPanel").style.display = "none";
     document.getElementById("chatContainer").style.display = "flex";
+
+    const box = document.getElementById("messages");
+    box.innerHTML = "";
+
+    globalHistory.forEach(m => {
+        const div = document.createElement("div");
+        div.textContent = m.sender + ": " + m.text;
+        box.appendChild(div);
+    });
 };
 </script>
 
 </body>
 </html>
-
