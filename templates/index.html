@@ -13,12 +13,14 @@
         <button id="globalChatBtn">Global Chat</button>
     </div>
 
-    <div id="chatContainer">
+    <!-- GLOBAL CHAT PANEL -->
+    <div id="chatContainer" class="panel">
         <div id="messages"></div>
         <input id="messageInput" placeholder="Type a message...">
     </div>
 
-    <div id="dmWindow">
+    <!-- DM PANEL (FULL SCREEN) -->
+    <div id="dmPanel" class="panel" style="display:none;">
         <div id="dmHeader"></div>
         <div id="dmMessages"></div>
         <input id="dmInput" placeholder="Type a DM...">
@@ -27,7 +29,7 @@
 <script>
 const socket = io();
 
-// Ask for username
+// Username prompt
 let myUsername = "";
 while (!myUsername || myUsername.trim() === "") {
     myUsername = prompt("Enter a username:");
@@ -86,16 +88,20 @@ document.addEventListener("contextmenu", e => {
         e.preventDefault();
         const target = e.target.dataset.username;
         if (target !== myUsername) {
-            openDMWindow(target);
+            openDM(target);
         }
     }
 });
 
-// Open DM window
-function openDMWindow(user) {
+// Switch to DM panel
+function openDM(user) {
     currentDM = user;
+
+    document.getElementById("chatContainer").style.display = "none";
+    document.getElementById("dmPanel").style.display = "flex";
+
     document.getElementById("dmHeader").textContent = "DM with " + user;
-    document.getElementById("dmWindow").style.display = "flex";
+    document.getElementById("dmMessages").innerHTML = "";
 }
 
 // Send DM
@@ -118,7 +124,7 @@ socket.on("dm", data => {
     }
 });
 
-// Add DM message to window
+// Add DM message
 function addDMMessage(sender, msg) {
     const box = document.getElementById("dmMessages");
     const div = document.createElement("div");
@@ -126,10 +132,11 @@ function addDMMessage(sender, msg) {
     box.appendChild(div);
 }
 
-// Global chat button
+// Switch back to global chat
 document.getElementById("globalChatBtn").onclick = () => {
     currentDM = null;
-    document.getElementById("dmWindow").style.display = "none";
+    document.getElementById("dmPanel").style.display = "none";
+    document.getElementById("chatContainer").style.display = "flex";
 };
 </script>
 
