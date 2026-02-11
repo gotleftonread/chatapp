@@ -1,64 +1,51 @@
 from flask import Flask, render_template
-from flask_socketio import SocketIO, emit, join_room
-from collections import defaultdict
-from flask import request
+from flask_socketio import SocketIO, join_room, emit
 import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
-
-connected_users = {}
-rooms = defaultdict(set)
-DEFAULT_ROOM = "general"
-
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+users = {}  # sid → username
+
+@socketio.on("connect")
+def handle_connect():
+    print("Client connected")
 
 @socketio.on("join")
 def handle_join(data):
-    username = data.get("username")
-    room = data.get("room", DEFAULT_ROOM)
-    if not username:
-        return
+    username = data["username"]
+    users[request.sid] = username
+    join_room(username)
 
-    connected_users[request.sid] = {"username": username, "room": room}
-    rooms[room].add(username)
-    join_room(room)
-
-    emit("system_message", {"message": f"{username} joined {room}."}, room=room)
-    emit("user_list", list(rooms[room]), room=room)
-
-
-@socketio.on("send_message")
-def handle_send_message(data):
-    msg = data.get("message", "").strip()
-    user_info = connected_users.get(request.sid)
-    if not user_info or not msg:
-        return
-
-    username = user_info["username"]
-    room = user_info["room"]
-    emit("chat_message", {"username": username, "message": msg}, room=room)
-
+    emit("user_list", list(users.values()), broadcast=True)
+    emit("system_message", f"{username} joined the chat", broadcast=True)
 
 @socketio.on("disconnect")
 def handle_disconnect():
-    user_info = connected_users.pop(request.sid, None)
-    if not user_info:
-        return
+    if request.sid in users:
+        username = users[request.sid]
+        del users[request.sid]
+        emit("user_list", list(users.values()), broadcast=True)
+        emit("system_message", f"{username} left the chat", broadcast=True)
 
-    username = user_info["username"]
-    room = user_info["room"]
-    if username in rooms[room]:
-        rooms[room].remove(username)
+@socketio.on("message")
+def handle_message(data):
+    emit("message", data, broadcast=True)
 
-    emit("system_message", {"message": f"{username} left {room}."}, room=room)
-    emit("user_list", list(rooms[room]), room=room)
+@socketio.on("dm")
+def handle_dm(data):
+    sender = data["from"]
+    receiver = data["to"]
+    message = data["message"]
 
+    emit("dm", {
+        "from": sender,
+        "message": message
+    }, room=receiver)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
