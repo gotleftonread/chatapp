@@ -64,6 +64,13 @@ body {
     outline: none;
 }
 
+.user.unread::after {
+    content: "●";
+    color: red;
+    float: right;
+    margin-right: 5px;
+}
+
 .system {
     color: #888;
     font-style: italic;
@@ -91,3 +98,4 @@ body {
     border: none;
     outline: none;
 }
+
