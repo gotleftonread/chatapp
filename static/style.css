@@ -21,10 +21,16 @@ body {
     background: #3a3a3a;
 }
 
-#chatContainer {
+/* Shared panel layout */
+.panel {
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+
+/* Global chat panel */
+#chatContainer {
+    background: #1e1e1e;
 }
 
 #messages {
@@ -44,15 +50,10 @@ body {
     font-style: italic;
 }
 
-#dmWindow {
-    position: fixed;
-    right: 20px;
-    top: 20px;
-    width: 300px;
-    height: 400px;
-    background: #333;
-    border: 1px solid #555;
+/* FULL-SCREEN DM PANEL */
+#dmPanel {
     display: none;
+    background: #333;
     flex-direction: column;
 }
 
