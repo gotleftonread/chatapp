@@ -106,6 +106,10 @@ document.addEventListener("contextmenu", e => {
 function openDM(user) {
     currentDM = user;
 
+    const userEl = [...document.querySelectorAll(".user")]
+        .find(u => u.dataset.username === user);
+    if (userEl) userEl.classList.remove("unread");
+
     document.getElementById("chatContainer").style.display = "none";
     document.getElementById("dmPanel").style.display = "flex";
 
@@ -126,10 +130,17 @@ document.getElementById("dmInput").addEventListener("keydown", e => {
     }
 });
 
-// RECEIVE DM
+// RECEIVE DM (with unread indicator)
 socket.on("dm", data => {
-    if (currentDM === data.from) {
-        addDMMessage(data.from, data.message);
+    const sender = data.from;
+
+    if (currentDM === sender) {
+        addDMMessage(sender, data.message);
+    } else {
+        const userEl = [...document.querySelectorAll(".user")]
+            .find(u => u.dataset.username === sender);
+
+        if (userEl) userEl.classList.add("unread");
     }
 });
 
