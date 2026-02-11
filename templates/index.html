@@ -7,41 +7,52 @@
 </head>
 
 <body>
-    <div id="sidebar">
-        <h2>Users</h2>
-        <div id="userList"></div>
-        <button id="globalChatBtn">Global Chat</button>
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen">
+        <h1>Mini Discord</h1>
+        <input id="usernameInput" placeholder="Enter username...">
+        <button id="joinBtn">Join</button>
     </div>
 
-    <!-- GLOBAL CHAT PANEL -->
-    <div id="chatContainer" class="panel">
-        <div id="messages"></div>
-        <input id="messageInput" placeholder="Type a message...">
-    </div>
+    <!-- MAIN APP -->
+    <div id="app" style="display:none;">
+        <div id="sidebar">
+            <h2>Users</h2>
+            <div id="userList"></div>
+            <button id="globalChatBtn">Global Chat</button>
+        </div>
 
-    <!-- DM PANEL (FULL SCREEN) -->
-    <div id="dmPanel" class="panel" style="display:none;">
-        <div id="dmHeader"></div>
-        <div id="dmMessages"></div>
-        <input id="dmInput" placeholder="Type a DM...">
+        <div id="chatContainer" class="panel">
+            <div id="messages"></div>
+            <input id="messageInput" placeholder="Type a message...">
+        </div>
+
+        <div id="dmPanel" class="panel" style="display:none;">
+            <div id="dmHeader"></div>
+            <div id="dmMessages"></div>
+            <input id="dmInput" placeholder="Type a DM...">
+        </div>
     </div>
 
 <script>
 const socket = io();
-
-// Username prompt
-let myUsername = "";
-while (!myUsername || myUsername.trim() === "") {
-    myUsername = prompt("Enter a username:");
-}
-myUsername = myUsername.trim();
-
+let myUsername = null;
 let currentDM = null;
 
-// Join server
-socket.emit("join", { username: myUsername });
+// LOGIN
+document.getElementById("joinBtn").onclick = () => {
+    const name = document.getElementById("usernameInput").value.trim();
+    if (!name) return;
 
-// Send global chat messages
+    myUsername = name;
+    socket.emit("join", { username: myUsername });
+
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("app").style.display = "flex";
+};
+
+// GLOBAL CHAT SEND
 document.getElementById("messageInput").addEventListener("keydown", e => {
     if (e.key === "Enter" && !currentDM) {
         socket.emit("message", {
@@ -52,7 +63,7 @@ document.getElementById("messageInput").addEventListener("keydown", e => {
     }
 });
 
-// Display global messages
+// GLOBAL CHAT RECEIVE
 socket.on("message", data => {
     const box = document.getElementById("messages");
     const div = document.createElement("div");
@@ -60,7 +71,7 @@ socket.on("message", data => {
     box.appendChild(div);
 });
 
-// System messages
+// SYSTEM MESSAGES
 socket.on("system_message", msg => {
     const box = document.getElementById("messages");
     const div = document.createElement("div");
@@ -69,7 +80,7 @@ socket.on("system_message", msg => {
     box.appendChild(div);
 });
 
-// Update user list
+// USER LIST
 socket.on("user_list", list => {
     const ul = document.getElementById("userList");
     ul.innerHTML = "";
@@ -82,18 +93,16 @@ socket.on("user_list", list => {
     });
 });
 
-// Right-click → DM
+// RIGHT-CLICK → DM
 document.addEventListener("contextmenu", e => {
     if (e.target.classList.contains("user")) {
         e.preventDefault();
         const target = e.target.dataset.username;
-        if (target !== myUsername) {
-            openDM(target);
-        }
+        if (target !== myUsername) openDM(target);
     }
 });
 
-// Switch to DM panel
+// OPEN DM PANEL
 function openDM(user) {
     currentDM = user;
 
@@ -104,7 +113,7 @@ function openDM(user) {
     document.getElementById("dmMessages").innerHTML = "";
 }
 
-// Send DM
+// SEND DM
 document.getElementById("dmInput").addEventListener("keydown", e => {
     if (e.key === "Enter" && currentDM) {
         socket.emit("dm", {
@@ -117,14 +126,14 @@ document.getElementById("dmInput").addEventListener("keydown", e => {
     }
 });
 
-// Receive DM
+// RECEIVE DM
 socket.on("dm", data => {
     if (currentDM === data.from) {
         addDMMessage(data.from, data.message);
     }
 });
 
-// Add DM message
+// ADD DM MESSAGE
 function addDMMessage(sender, msg) {
     const box = document.getElementById("dmMessages");
     const div = document.createElement("div");
@@ -132,7 +141,7 @@ function addDMMessage(sender, msg) {
     box.appendChild(div);
 }
 
-// Switch back to global chat
+// BACK TO GLOBAL CHAT
 document.getElementById("globalChatBtn").onclick = () => {
     currentDM = null;
     document.getElementById("dmPanel").style.display = "none";
