@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mini Discord</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="app">
+    <div id="login-screen" class="overlay">
+        <div class="login-box">
+            <h2>Enter a username</h2>
+            <input type="text" id="username-input" placeholder="Your name">
+            <button id="join-btn">Join Chat</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>Users</h2>
+        <ul id="user-list"></ul>
+    </div>
+
+    <div class="chat-container">
+        <div id="messages"></div>
+        <div class="input-bar">
+            <input type="text" id="message-input" placeholder="Type a message...">
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = io("http://127.0.0.1:5000");
+
+    const loginScreen = document.getElementById("login-screen");
+    const usernameInput = document.getElementById("username-input");
+    const joinBtn = document.getElementById("join-btn");
+
+    const messagesDiv = document.getElementById("messages");
+    const messageInput = document.getElementById("message-input");
+    const sendBtn = document.getElementById("send-btn");
+    const userList = document.getElementById("user-list");
+
+    let username = null;
+
+    function addMessage(text, cls = "") {
+        const div = document.createElement("div");
+        div.className = "message " + cls;
+        div.textContent = text;
+        messagesDiv.appendChild(div);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    joinBtn.onclick = () => {
+        const name = usernameInput.value.trim();
+        if (!name) return;
+        username = name;
+        socket.emit("join", {username});
+        loginScreen.style.display = "none";
+    };
+
+    usernameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") joinBtn.click();
+    });
+
+    sendBtn.onclick = () => {
+        const msg = messageInput.value.trim();
+        if (!msg) return;
+        socket.emit("send_message", {message: msg});
+        messageInput.value = "";
+    };
+
+    messageInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") sendBtn.click();
+    });
+
+    socket.on("chat_message", (data) => {
+        addMessage(`${data.username}: ${data.message}`);
+    });
+
+    socket.on("system_message", (data) => {
+        addMessage(data.message, "system");
+    });
+
+    socket.on("user_list", (users) => {
+        userList.innerHTML = "";
+        users.forEach(u => {
+            const li = document.createElement("li");
+            li.textContent = u;
+            userList.appendChild(li);
+        });
+    });
+</script>
+</body>
+</html>

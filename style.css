@@ -1,0 +1,130 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+    background-color: #202225;
+    color: #fff;
+}
+
+#app {
+    display: flex;
+    height: 100vh;
+}
+
+/* Login overlay */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.login-box {
+    background: #2f3136;
+    padding: 20px 30px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+
+.login-box h2 {
+    margin-bottom: 15px;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: none;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    background: #5865f2;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 220px;
+    background: #2f3136;
+    padding: 15px;
+    border-right: 1px solid #202225;
+}
+
+.sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+#user-list {
+    list-style: none;
+}
+
+#user-list li {
+    padding: 5px 0;
+    border-bottom: 1px solid #202225;
+}
+
+/* Chat */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.message {
+    margin-bottom: 8px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    background: #36393f;
+}
+
+.message.system {
+    text-align: center;
+    background: transparent;
+    color: #b9bbbe;
+    font-size: 12px;
+}
+
+.input-bar {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #202225;
+    background: #2f3136;
+}
+
+#message-input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    margin-right: 8px;
+}
+
+#send-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    background: #5865f2;
+    color: #fff;
+    cursor: pointer;
+}
