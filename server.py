@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_socketio import SocketIO, emit, join_room
 from collections import defaultdict
 from flask import request
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -34,7 +35,7 @@ def handle_join(data):
 
 @socketio.on("send_message")
 def handle_send_message(data):
-    msg = data.get("message", "").trim() if hasattr(str, "trim") else data.get("message", "").strip()
+    msg = data.get("message", "").strip()
     user_info = connected_users.get(request.sid)
     if not user_info or not msg:
         return
@@ -60,4 +61,5 @@ def handle_disconnect():
 
 
 if __name__ == "__main__":
-    socketio.run(app, host="127.0.0.1", port=5000, allow_unsafe_werkzeug=True)
+    port = int(os.environ.get("PORT", 5000))
+    socketio.run(app, host="0.0.0.0", port=port, allow_unsafe_werkzeug=True)
